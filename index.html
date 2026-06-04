@@ -109,6 +109,16 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
 [data-theme="light"] .field input,[data-theme="light"] .field textarea { background:rgba(255,255,255,0.75); }
 .field input::placeholder,.field textarea::placeholder { color:var(--text-3); font-size:14px; }
 .field input:focus,.field textarea:focus { border-color:var(--vlight); background:rgba(139,92,246,0.07); box-shadow:0 0 0 3px rgba(139,92,246,0.15),0 0 20px rgba(139,92,246,0.1); }
+.field input.readonly-prefilled,
+.field input[readonly] {
+  background:rgba(124,58,237,0.03); color:var(--text-2); cursor:not-allowed;
+  border-style:dashed; opacity:0.85;
+}
+.field input.readonly-prefilled:focus,
+.field input[readonly]:focus {
+  border-color:var(--border); background:rgba(124,58,237,0.03);
+  box-shadow:none;
+}
 .field textarea { resize:vertical; min-height:76px; font-size:15px; }
 .field-hint { font-size:11px; color:var(--text-3); margin-top:5px; transition:color 0.45s; }
 .field-error-msg { font-size:10.5px; color:var(--red); margin-top:5px; display:none; font-family:'JetBrains Mono',monospace; }
@@ -1103,7 +1113,96 @@ function handleGoogleCredential(resp){
     name:    profile.name,
     picture: profile.picture
   };
-  unlockForm(_googleUser);
+  // Gate the form on Paid Apps YTD lookup — only VSAT applicants may proceed
+  checkApplicantThenUnlock(_googleUser);
+}
+
+/* ═══════════════════════════════════════
+   PAID APPS YTD LOOKUP (gate)
+   - Calls the backend lookupReferrer endpoint via JSONP
+   - On found: autofills referrer fields (readonly) + skips to Step 2
+   - On not-found: shows error on auth gate, allows user to retry sign-in
+═══════════════════════════════════════ */
+function checkApplicantThenUnlock(profile){
+  // Hide the auth button while verifying
+  var authBtn = document.getElementById('authBtn');
+  var authErr = document.getElementById('authError');
+  if(authBtn) authBtn.style.display = 'none';
+  if(authErr) authErr.classList.remove('show');
+  setAuthStatus('Verifying VSAT application record...');
+
+  var cbName = 'vrpLookup_' + Date.now();
+  var timedOut = false;
+  var timeoutId = setTimeout(function(){
+    timedOut = true;
+    clearAuthStatus();
+    onApplicantLookupFailure('Verification timed out. Please check your connection and try again.');
+  }, 12000);
+
+  window[cbName] = function(result){
+    if(timedOut) return;
+    clearTimeout(timeoutId);
+    clearAuthStatus();
+    try { delete window[cbName]; } catch(e){ window[cbName] = undefined; }
+    if(!result || result.success === false){
+      var msg = (result && result.message) ? result.message : 'Could not verify your VSAT application. Please try again.';
+      onApplicantLookupFailure(msg);
+      return;
+    }
+    if(result.found === true){
+      // Stash lookup data on profile so unlockForm can use it
+      profile.applicantData = {
+        name:   result.name   || profile.name || '',
+        mobile: result.mobile || '',
+        appNo:  result.appNo  || ''
+      };
+      unlockForm(profile);
+    } else {
+      onApplicantLookupFailure('// Sign in with the Email ID used to apply for VSAT.');
+    }
+  };
+
+  var script = document.createElement('script');
+  script.src = SCRIPT_URL +
+    '?action=lookupReferrer' +
+    '&email='   + encodeURIComponent(profile.email) +
+    '&idToken=' + encodeURIComponent(_googleIdToken) +
+    '&callback=' + cbName;
+  script.onerror = function(){
+    if(timedOut) return;
+    clearTimeout(timeoutId);
+    clearAuthStatus();
+    onApplicantLookupFailure('Could not reach verification server. Please try again.');
+  };
+  document.body.appendChild(script);
+}
+
+function setAuthStatus(text){
+  var el = document.getElementById('authStatusMsg');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'authStatusMsg';
+    el.style.cssText = 'margin-top:14px;font-size:13px;color:var(--text-2);font-family:Inter,sans-serif;text-align:center;letter-spacing:0.3px;';
+    var authBtn = document.getElementById('authBtn');
+    if(authBtn && authBtn.parentNode) authBtn.parentNode.insertBefore(el, authBtn.nextSibling);
+  }
+  el.textContent = text || '';
+  el.style.display = text ? '' : 'none';
+}
+function clearAuthStatus(){ setAuthStatus(''); }
+
+function onApplicantLookupFailure(msg){
+  // Reset OAuth state so the user can try a different Google account
+  _googleToken = null;
+  _googleIdToken = null;
+  _googleUser = null;
+  try { google.accounts.id.disableAutoSelect(); } catch(e){}
+  // Restore auth UI
+  var authBtn = document.getElementById('authBtn');
+  if(authBtn) authBtn.style.display = '';
+  var pill = document.getElementById('authUserPill');
+  if(pill) pill.classList.remove('show');
+  showAuthError(msg);
 }
 
 function showGoogleButtonFallback(){
@@ -1129,9 +1228,26 @@ function showGoogleButtonFallback(){
 }
 
 function unlockForm(profile){
-  // Auto-fill name and email
-  document.getElementById('refName').value = profile.name || '';
-  document.getElementById('refEmail').value = profile.email || '';
+  // Autofill referrer fields from Paid Apps YTD lookup (readonly)
+  var ad = profile.applicantData || {};
+
+  var nameField   = document.getElementById('refName');
+  var emailField  = document.getElementById('refEmail');
+  var waField     = document.getElementById('refWhatsapp');
+  var appIdField  = document.getElementById('refAppId');
+
+  // Prefer the registered name from the applicant record; fall back to Google profile name
+  nameField.value  = ad.name   || profile.name  || '';
+  emailField.value = profile.email || '';
+  waField.value    = (ad.mobile || '').replace(/[^0-9+]/g, ''); // keep digits only
+  appIdField.value = ad.appNo  || '';
+
+  // Lock all autofilled fields as readonly (visually muted, can't be edited)
+  [nameField, emailField, waField, appIdField].forEach(function(el){
+    if(!el) return;
+    el.setAttribute('readonly', 'readonly');
+    el.classList.add('readonly-prefilled');
+  });
 
   // Show user pill on auth gate briefly then dismiss
   var pill = document.getElementById('authUserPill');
@@ -1146,9 +1262,14 @@ function unlockForm(profile){
   // Render the Turnstile widget now that the form is unlocked
   renderTurnstile();
 
-  // After short delay, hide gate and show main app + policy
+  // After short delay, hide gate, jump straight to Step 2 (referee details),
+  // and show policy popup if applicable
   setTimeout(function(){
     document.getElementById('authGate').classList.add('hidden');
+    // Skip Step 1 entirely — referrer data is already verified + filled
+    currentStep = 2;
+    updateProgress(2);
+    showPanel('step2', false);
     // Reveal the bottom-left policy launcher (always available)
     revealPolicyLauncher();
     // Auto-show policy modal unless this user previously opted out
@@ -1164,8 +1285,13 @@ function signOut(){
   _googleIdToken = null;
   _googleUser = null;
   _turnstileToken = null;
-  document.getElementById('refName').value = '';
-  document.getElementById('refEmail').value = '';
+  ['refName','refEmail','refWhatsapp','refAppId'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    el.value = '';
+    el.removeAttribute('readonly');
+    el.classList.remove('readonly-prefilled');
+  });
   document.getElementById('authUserPill').classList.remove('show');
   document.getElementById('authBtn').style.display = '';
   document.getElementById('authGate').classList.remove('hidden');
