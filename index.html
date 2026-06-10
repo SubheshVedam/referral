@@ -450,23 +450,6 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
 .lb-fab:active { transform:scale(0.97); }
 .lb-fab-icon { width:28px; height:28px; background:rgba(255,255,255,0.18); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 
-/* ── TELEGRAM FAB (stacks 8px above the Leaderboard FAB) ── */
-.tg-fab {
-  position:fixed; bottom:88px; right:24px; z-index:200;
-  display:flex; align-items:center; gap:10px;
-  padding:0 20px 0 16px; height:52px;
-  background:linear-gradient(135deg,#229ED9 0%,#1B7BB3 100%);
-  border:none; border-radius:99px; cursor:pointer;
-  color:#fff; text-decoration:none;
-  font-family:'Inter',sans-serif; font-size:13px; font-weight:700;
-  box-shadow:0 8px 32px rgba(34,158,217,0.45), 0 0 0 1px rgba(255,255,255,0.12) inset;
-  transition:transform 0.2s, box-shadow 0.2s;
-  -webkit-tap-highlight-color:transparent;
-}
-.tg-fab:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 10px 38px rgba(34,158,217,0.55), 0 0 0 1px rgba(255,255,255,0.15) inset; }
-.tg-fab:active { transform:scale(0.97); }
-.tg-fab-icon { width:28px; height:28px; background:rgba(255,255,255,0.18); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-
 /* Leaderboard overlay */
 .lb-overlay { position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); opacity:0; pointer-events:none; transition:opacity 0.3s; }
 .lb-overlay.open { opacity:1; pointer-events:all; }
@@ -558,7 +541,6 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
   .success-icon-wrap { width:68px; height:68px; border-radius:18px; }
   .step-dot-line { width:14px; }
   .lb-fab { bottom:20px; right:16px; padding:0 16px 0 12px; height:48px; font-size:12px; }
-  .tg-fab { bottom:76px; right:16px; padding:0 16px 0 12px; height:48px; font-size:12px; }
   .lb-col-heads { grid-template-columns:36px 1fr 80px 80px; padding:8px 20px 8px; }
   .lb-row { grid-template-columns:36px 1fr 80px 80px; padding:12px 20px; }
   .lb-header { padding:18px 20px 14px; }
@@ -675,14 +657,6 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
 
   </div>
 </div>
-
-<!-- Telegram FAB (above Leaderboard) -->
-<a class="tg-fab" href="https://bit.ly/4ux5ZO5" target="_blank" rel="noopener noreferrer">
-  <span class="tg-fab-icon">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
-  </span>
-  Join Telegram
-</a>
 
 <!-- Leaderboard FAB -->
 <button class="lb-fab" onclick="openLeaderboard()">
