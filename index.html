@@ -53,7 +53,8 @@ body { font-family:'Inter',sans-serif; min-height:100vh; background:var(--bg); c
 .scanline { position:fixed; inset:0; z-index:0; pointer-events:none; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,var(--scan-op)) 2px,rgba(0,0,0,var(--scan-op)) 4px); }
 
 /* ── THEME TOGGLE ── */
-.theme-toggle-wrap { position:relative; z-index:10; width:100%; max-width:720px; display:flex; justify-content:flex-end; align-items:center; gap:10px; padding:14px 0 0; }
+.theme-toggle-wrap { position:relative; z-index:10; width:100%; max-width:660px; display:flex; justify-content:flex-start; align-items:center; gap:10px; padding:14px 0 0; }
+.theme-toggle-wrap #logoutBtn { margin-left:auto; }
 .theme-toggle { width:36px; height:36px; border-radius:9px; border:1px solid var(--border); background:var(--surface2); backdrop-filter:blur(12px); cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text-2); transition:all 0.25s; -webkit-tap-highlight-color:transparent; }
 .theme-toggle:hover { border-color:var(--border-h); color:var(--vlight); box-shadow:0 0 18px rgba(124,58,237,0.25); }
 .theme-toggle:active { transform:scale(0.9); }
@@ -154,6 +155,24 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
 .btn-another { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; height:50px; border:1px solid var(--border-h); border-radius:12px; background:rgba(124,58,237,0.08); color:var(--vlight); font-family:'Inter',sans-serif; font-size:14px; font-weight:700; letter-spacing:0.3px; cursor:pointer; transition:all 0.2s; -webkit-tap-highlight-color:transparent; }
 .btn-another:hover { background:rgba(124,58,237,0.18); border-color:var(--vlight); box-shadow:0 0 24px rgba(124,58,237,0.25); color:var(--text); transform:translateY(-1px); }
 .btn-another:active { transform:scale(0.98); }
+.success-telegram {
+  display:inline-flex; align-items:center; gap:8px;
+  margin-top:16px; padding:9px 16px;
+  border-radius:10px;
+  background:rgba(34,158,217,0.10);
+  border:1px solid rgba(34,158,217,0.32);
+  color:#1B7BB3;
+  font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+  text-decoration:none;
+  transition:all 0.2s;
+}
+.success-telegram:hover {
+  background:rgba(34,158,217,0.18);
+  border-color:rgba(34,158,217,0.55);
+  transform:translateY(-1px);
+}
+.success-telegram svg { flex-shrink:0; }
+[data-theme="dark"] .success-telegram { color:#5BC1EE; }
 
 .spinner { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.25); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; flex-shrink:0; }
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -261,18 +280,21 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
 .dash-btn:active { transform:scale(0.9); }
 .dash-btn svg { flex-shrink:0; }
 
-/* ── REWARD PLACARD (sits above the dashboard button row, right-aligned) ── */
+/* ── REWARD PLACARD (sits above the dashboard button row, full width of progress line) ── */
 .reward-placard-wrap {
-  position:relative; z-index:10; width:100%; max-width:720px;
-  display:flex; justify-content:flex-end; padding:14px 0 0;
+  position:relative; z-index:10; width:100%; max-width:660px;
+  padding:14px 0 0;
 }
 .reward-placard {
   display:flex; align-items:center; gap:12px;
-  padding:11px 16px;
-  background:linear-gradient(135deg, rgba(249,125,3,0.08) 0%, rgba(124,58,237,0.08) 100%);
+  width:100%;
+  padding:12px 18px;
+  background:
+    linear-gradient(135deg, rgba(249,125,3,0.14) 0%, rgba(124,58,237,0.14) 100%),
+    var(--surface2);
   border:1px solid var(--border); border-radius:14px;
-  max-width:360px; backdrop-filter:blur(12px);
-  box-shadow:0 4px 14px rgba(124,58,237,0.08);
+  backdrop-filter:blur(12px);
+  box-shadow:0 4px 14px rgba(124,58,237,0.10);
   position:relative; overflow:hidden;
   transition:border-color 0.25s, box-shadow 0.25s;
 }
@@ -301,9 +323,16 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
   font-size:11px; line-height:1.4; color:var(--text-2);
   font-weight:500;
 }
+
 @media (max-width:640px){
-  .reward-placard-wrap { padding:14px 16px 0; }
-  .reward-placard { max-width:100%; }
+  .reward-placard-wrap { padding:14px 16px 12px; }
+  .reward-placard {
+    padding:13px 14px;
+    background:
+      linear-gradient(135deg, rgba(249,125,3,0.18) 0%, rgba(124,58,237,0.18) 100%),
+      var(--surface2);
+  }
+  .reward-placard-text { font-size:11.5px; }
 }
 
 /* ═══════════════════════════════════════
@@ -421,6 +450,23 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
 .lb-fab:active { transform:scale(0.97); }
 .lb-fab-icon { width:28px; height:28px; background:rgba(255,255,255,0.18); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 
+/* ── TELEGRAM FAB (stacks 8px above the Leaderboard FAB) ── */
+.tg-fab {
+  position:fixed; bottom:88px; right:24px; z-index:200;
+  display:flex; align-items:center; gap:10px;
+  padding:0 20px 0 16px; height:52px;
+  background:linear-gradient(135deg,#229ED9 0%,#1B7BB3 100%);
+  border:none; border-radius:99px; cursor:pointer;
+  color:#fff; text-decoration:none;
+  font-family:'Inter',sans-serif; font-size:13px; font-weight:700;
+  box-shadow:0 8px 32px rgba(34,158,217,0.45), 0 0 0 1px rgba(255,255,255,0.12) inset;
+  transition:transform 0.2s, box-shadow 0.2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.tg-fab:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 10px 38px rgba(34,158,217,0.55), 0 0 0 1px rgba(255,255,255,0.15) inset; }
+.tg-fab:active { transform:scale(0.97); }
+.tg-fab-icon { width:28px; height:28px; background:rgba(255,255,255,0.18); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
 /* Leaderboard overlay */
 .lb-overlay { position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.55); backdrop-filter:blur(6px); opacity:0; pointer-events:none; transition:opacity 0.3s; }
 .lb-overlay.open { opacity:1; pointer-events:all; }
@@ -512,6 +558,7 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
   .success-icon-wrap { width:68px; height:68px; border-radius:18px; }
   .step-dot-line { width:14px; }
   .lb-fab { bottom:20px; right:16px; padding:0 16px 0 12px; height:48px; font-size:12px; }
+  .tg-fab { bottom:76px; right:16px; padding:0 16px 0 12px; height:48px; font-size:12px; }
   .lb-col-heads { grid-template-columns:36px 1fr 80px 80px; padding:8px 20px 8px; }
   .lb-row { grid-template-columns:36px 1fr 80px 80px; padding:12px 20px; }
   .lb-header { padding:18px 20px 14px; }
@@ -619,11 +666,23 @@ header { width:100%; max-width:720px; padding:28px 0 20px; display:flex; align-i
         <h2 class="success-title">Referral Submitted!</h2>
         <p class="success-msg">Your referral has been recorded. Your friend will receive their exclusive discount code on their email shortly. Keep referring and earn more rewards!</p>
         <button class="btn-another" onclick="resetForm()"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5a5.5 5.5 0 1111 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13 5.5l0 2-2 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Submit Another Referral</button>
+        <a class="success-telegram" href="https://bit.ly/4ux5ZO5" target="_blank" rel="noopener noreferrer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+          Join the Telegram Community
+        </a>
       </div>
     </div>
 
   </div>
 </div>
+
+<!-- Telegram FAB (above Leaderboard) -->
+<a class="tg-fab" href="https://bit.ly/4ux5ZO5" target="_blank" rel="noopener noreferrer">
+  <span class="tg-fab-icon">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+  </span>
+  Join Telegram
+</a>
 
 <!-- Leaderboard FAB -->
 <button class="lb-fab" onclick="openLeaderboard()">
